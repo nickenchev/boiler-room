@@ -1,0 +1,14 @@
+build/
+.ccls-cache/
+.cache/
+.clangd/
+*.spv
+data/
+.vscode/
+.dir-locals.el
+run.sh
+/renderdoc.cap
+.vs/
+CMakeSettings.json
+compile_commands.json
+imgui.ini
