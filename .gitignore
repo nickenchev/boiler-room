@@ -12,3 +12,4 @@ run.sh
 CMakeSettings.json
 compile_commands.json
 imgui.ini
+/CMakeLists.txt.user

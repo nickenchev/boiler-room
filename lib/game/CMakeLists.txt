@@ -1,5 +1,6 @@
 add_library(game
-	src/gamepart.cpp
+	"src/editorpart.h"
+	"src/editorpart.cpp"
 )
 
 target_include_directories(game

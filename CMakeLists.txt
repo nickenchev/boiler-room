@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.2)
-project(breakout CXX)
+project(boiler-room CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -14,5 +14,5 @@ add_subdirectory(lib/game)
 add_executable(boiler-room
 	src/main_game.cpp)
 
-target_include_directories(boiler-room PRIVATE game boiler boilered)
+target_include_directories(boiler-room PRIVATE game boiler)
 target_link_libraries(boiler-room game boiler)

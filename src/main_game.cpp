@@ -9,7 +9,7 @@
 #include <boiler.h>
 #include <display/vulkanrenderer.h>
 
-#include "gamepart.h"
+#include "editorpart.h"
 
 Boiler::LogDestination logDestination;
 
@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
 		engine.initialize(initialSize);
 
 		// create the part and start it
-		auto part = std::make_shared<GamePart>(engine);
+		auto part = std::make_shared<EditorPart>(engine);
 		engine.setPart(part);
 
 		while (engine.isRunning())
