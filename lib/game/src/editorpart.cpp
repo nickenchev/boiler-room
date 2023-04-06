@@ -2,6 +2,7 @@
 #include <fstream>
 #include <sstream>
 #include <unordered_map>
+#include <array>
 
 #include <glm/glm.hpp>
 #include <glm/gtx/rotate_vector.hpp>
@@ -13,6 +14,10 @@
 #include "display/renderer.h"
 #include "assets/maps/maploader.h"
 
+#include "core/components/rendercomponent.h"
+#include "physics/collidercomponent.h"
+#include "physics/physicscomponent.h"
+#include "core/componentmapper.h"
 #include "camera/cameracomponent.h"
 #include "physics/movementcomponent.h"
 #include "input/inputcomponent.h"
@@ -29,7 +34,17 @@
 
 #include "imgui/imgui.h"
 
+const char *defaultModelPath = "data/";
+const char *PopupObjectTypeSelection = "object_type_selection";
+
 using namespace Boiler;
+using namespace Boiler::Editor;
+
+std::array<ObjectType, 3> objectTypes{
+	ObjectType::Mesh,
+	ObjectType::Light,
+	ObjectType::Camera
+};
 
 EditorPart::EditorPart(Engine &engine) : Part("Boiler Room", engine), gltfImporter(engine)
 {
@@ -38,7 +53,9 @@ EditorPart::EditorPart(Engine &engine) : Part("Boiler Room", engine), gltfImport
 	menuAddModel = false;
 	windowEntities = true;
 	menuNewEntity = false;
-	selectedEntity = Entity::NO_ENTITY;
+
+	strcpy(modelFilePath, "data/corridor-maya.gltf");
+	engine.setMouseRelativeMode(false);
 }
 
 void EditorPart::onStart()
@@ -46,7 +63,6 @@ void EditorPart::onStart()
 	auto& ecs = engine.getEcs();
 
 	// create viewport camera
-
 	Entity viewportCam = ecs.newEntity("Viewport Camera");
 	ecs.createComponent<InputComponent>(viewportCam);
 	ecs.createComponent<TransformComponent>(viewportCam);
@@ -58,147 +74,309 @@ void EditorPart::onStart()
 	camPhysics.speed = 0.1f;
 	camPhysics.acceleration = 0.25f;
 
+	auto &camCollider = ecs.createComponent<ColliderComponent>(viewportCam);
+	camCollider.colliderType = ColliderType::AABB;
+	camCollider.isDynamic = true;
+	camCollider.min = vec3(-0.5f, -0.5f, -0.5f);
+	camCollider.min = vec3(0.5f, 0.5f, 0.5f);
+
 	Entity gui = ecs.newEntity("gui");
     ecs.createComponent<GUIComponent>(gui, [this, &ecs] {
-		if (ImGui::Begin("Assets", &windowModels, ImGuiWindowFlags_MenuBar))
+		if (ImGui::Begin("Scene", &windowModels, ImGuiWindowFlags_MenuBar))
 		{
 			if (ImGui::BeginMenuBar())
 			{
+				ImGui::InputText("Model File Path", modelFilePath, FILE_PATH_BUFF_SIZE);
 				if (ImGui::MenuItem("Add Model"))
-                {
-					models.push_back(gltfImporter.import(engine.getRenderer().getAssetSet(), "data/terrain/terrain.gltf"));
-                }
-				ImGui::EndMenuBar();
-			}
-
-			// Display liste of loaded models
-			if (ImGui::BeginTable("ModelAssets", 2, 0))
-			{
-				ImGui::TableSetupScrollFreeze(0, 1);
-				ImGui::TableSetupColumn("File", ImGuiTableColumnFlags_None);
-				ImGui::TableSetupColumn("Actions", ImGuiTableColumnFlags_None);
-				ImGui::TableHeadersRow();
-
-                for (auto model : models)
-                {
-					// File path
-                    ImGui::TableNextRow();
-                    ImGui::TableSetColumnIndex(0);
-					ImGui::Text(model->getFilePath().c_str());
-
-					// Actions
-                    ImGui::TableSetColumnIndex(1);
-
-					if (ImGui::Button("Instantiate"))
-					{
-						Entity newEntity = ecs.newEntity("New Entity");
-						model->createInstance(ecs, newEntity);
-						ecs.createComponent<TransformComponent>(newEntity);
-					}
-                }
-
-				ImGui::EndTable();
-			}
-
-			ImGui::End();
-		}
-
-		ImGui::Begin("Entities", &windowEntities, ImGuiWindowFlags_MenuBar);
-		{
-
-			if (ImGui::BeginMenuBar())
-			{
-				if (ImGui::BeginMenu("File"))
 				{
-					if (ImGui::MenuItem("New Entity", "CTRL+N"))
-					{
-						ecs.newEntity("New Entity");
-					}
-					ImGui::EndMenu();
+					models.push_back(gltfImporter.import(engine.getRenderer().getAssetSet(), modelFilePath));
 				}
 				ImGui::EndMenuBar();
 			}
 
-			static ImGuiTableFlags flags =
-				ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable
-				| ImGuiTableFlags_Sortable | ImGuiTableFlags_SortMulti
-				| ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_NoBordersInBody
-				| ImGuiTableFlags_ScrollX | ImGuiTableFlags_ScrollY
-				| ImGuiTableFlags_SizingFixedFit;
+			ImGui::ShowDemoWindow();
+
+			ImGuiTreeNodeFlags headerFlags = ImGuiTreeNodeFlags_DefaultOpen;
+			// Display liste of loaded models
+			if (ImGui::CollapsingHeader("Assets", headerFlags))
+			{
+				if (ImGui::BeginTable("Models", 2))
+				{
+					ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_NoHide);
+					ImGui::TableSetupColumn("Type");
+					ImGui::TableHeadersRow();
+
+					// iterate the loaded models
+					for (int modelIdx = 0; modelIdx < models.size(); ++modelIdx)
+					{
+						auto &model = models[modelIdx];
+						ImGui::TableNextRow();
+
+						// file path
+						ImGui::TableNextColumn();
+						bool isOpen = ImGui::TreeNodeEx(model->getFilePath().c_str(), ImGuiTreeNodeFlags_SpanFullWidth);
+
+						ImGui::TableNextColumn();
+						ImGui::TextUnformatted("Model");
+
+						if (isOpen)
+						{
+							// meshes
+							ImGui::TableNextRow();
+							ImGui::TableNextColumn();
+							if (ImGui::TreeNodeEx("Meshes"))
+							{
+								ImGui::TableNextColumn();
+								ImGui::TextDisabled("");
+								if (model->getModel().meshes.size())
+								{
+									ImGui::TableNextRow();
+									for (int meshIdx = 0; meshIdx < model->getModel().meshes.size(); ++meshIdx)
+									{
+										const gltf::Mesh &mesh = model->getModel().meshes.at(meshIdx);
+										ImGui::TableNextColumn();
+
+										bool isSelected = meshIndex == meshIdx;
+										if (ImGui::Selectable(mesh.name.c_str(), &isSelected))
+										{
+											modelIndex = modelIdx;
+											meshIndex = meshIdx;
+										}
+
+										ImGui::TableNextColumn();
+										ImGui::TextUnformatted(std::to_string(mesh.primitives.size()).c_str());
+									}
+								}
+								ImGui::TreePop(); // mesh
+							}
+							ImGui::TreePop(); // model
+						}
+					}
+
+					ImGui::EndTable();
+				}
+			}
 
 			const int columnEntityId = 0;
 			const int columnEntityName = 1;
 			const int columnEntityDelete = 2;
+			ImGuiTableFlags tableFlags = ImGuiTableFlags_ScrollY | ImGuiTableFlags_RowBg;
 
-			if (ImGui::BeginTable("boiler_table_entities", 3, 0, ImVec2(0, 0), 0))
+			if (ImGui::CollapsingHeader("Objects", headerFlags))
 			{
-				ImGui::TableSetupColumn("ID");
-				ImGui::TableSetupColumn("Name");
-				ImGui::TableHeadersRow();
-
-				unsigned int i = 0;
-				for (const Entity &entity : ecs.getEntityWorld().getEntities())
+				if (ImGui::Button("Add Object"))
 				{
-					std::string label = fmt::format("{}", entity.getId());
-                    ImGui::PushID(entity.getId());
-                    ImGui::TableNextRow();
-
-					ImGui::TableNextColumn();
-					bool isEntitySelected = false;
-					ImGuiSelectableFlags selectableFlags = ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap;
-                    ImGui::Selectable(label.c_str(), &isEntitySelected, selectableFlags, ImVec2(0, 0));
-
-					ImGui::TableNextColumn();
-					ImGui::TextUnformatted(ecs.nameOf(entity).c_str());
-
-					if (isEntitySelected)
-					{
-						selectedEntity = entity;
-
-						auto &transform = ecs.retrieve<TransformComponent>(selectedEntity);
-						vec3 entPos = transform.getPosition();
-						vec3 entScale = transform.getScale();
-
-						transformEditor.position[0] = entPos.x;
-						transformEditor.position[1] = entPos.y;
-						transformEditor.position[2] = entPos.z;
-
-						transformEditor.scale[0] = entScale.x;
-						transformEditor.scale[1] = entScale.y;
-						transformEditor.scale[2] = entScale.z;
-					}
-
-					ImGui::PopID();
-					++i;
+					ImGui::OpenPopup(PopupObjectTypeSelection);
 				}
-				ImGui::EndTable();
-
-				if (selectedEntity != Entity::NO_ENTITY)
+				if (ImGui::BeginTable("boiler_table_entities", 1, tableFlags, ImVec2(0, 300), 0))
 				{
-					ImGui::Begin("Components", &windowEntities, ImGuiWindowFlags_MenuBar);
+					ImGui::TableSetupColumn("Name");
+					ImGui::TableHeadersRow();
+
+					for (int i = 0; i < sceneObjects.size(); ++i)
 					{
-						if (ecs.hasComponent<TransformComponent>(selectedEntity))
+						const Entity &entity = sceneObjects[i]->getEntity();
+						const std::string &name = sceneObjects[i]->getName();
+						ImGui::PushID(entity.getId());
+						ImGui::TableNextRow();
+
+						ImGui::TableNextColumn();
+						bool isSelected = i == objectIndex;
+						ImGuiSelectableFlags selectableFlags = ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap;
+						ImGui::Selectable(name.c_str(), &isSelected, selectableFlags, ImVec2(0, 0));
+
+						if (isSelected)
 						{
-							if (ImGui::CollapsingHeader("Transform"))
+							objectIndex = i;
+						}
+
+						ImGui::PopID();
+					}
+					ImGui::EndTable();
+
+				}
+				if (ImGui::BeginPopup(PopupObjectTypeSelection))
+				{
+					for (auto objectType : objectTypes)
+					{
+						switch (objectType)
+						{
+							case ObjectType::Mesh:
 							{
-								auto &transform = ecs.retrieve<TransformComponent>(selectedEntity);
-								if (ImGui::InputFloat3("position", transformEditor.position.data()))
+								if (ImGui::Selectable("Mesh"))
 								{
-									transform.setPosition(vec3(transformEditor.position[0], transformEditor.position[1], transformEditor.position[2]));
+									const std::string newName = fmt::format("Object {}", sceneObjects.size() + 1);
+									Entity newEntity = ecs.newEntity(newName);
+									sceneObjects.push_back(std::make_unique<SceneMesh>(newName, newEntity));
+
+									ecs.createComponent<TransformComponent>(newEntity);
+									ecs.createComponent<RenderComponent>(newEntity);
+									objectIndex = sceneObjects.size() - 1;
 								}
-								if (ImGui::InputFloat3("scale", transformEditor.scale.data()))
+								break;
+							}
+							case ObjectType::Light:
+							{
+								if (ImGui::Selectable("Light"))
 								{
-									transform.setScale(vec3(transformEditor.scale[0], transformEditor.scale[1], transformEditor.scale[2]));
+									const std::string newName = fmt::format("Object {}", sceneObjects.size() + 1);
+									Entity newEntity = ecs.newEntity(newName);
+									sceneObjects.push_back(std::make_unique<SceneLight>(newName, newEntity));
+
+									ecs.createComponent<TransformComponent>(newEntity);
+									ecs.createComponent<LightingComponent>(newEntity, vec4(1, 1, 1, 1));
+									objectIndex = sceneObjects.size() - 1;
 								}
+								break;
+							}
+							case ObjectType::Camera:
+							{
+								if (ImGui::Selectable("Camera"))
+								{
+									const std::string newName = fmt::format("Object {}", sceneObjects.size() + 1);
+									Entity newEntity = ecs.newEntity(newName);
+									sceneObjects.push_back(std::make_unique<SceneCamera>(newName, newEntity));
+
+									ecs.createComponent<TransformComponent>(newEntity);
+									objectIndex = sceneObjects.size() - 1;
+								}
+								break;
 							}
 						}
+
 					}
-					ImGui::End();
+					ImGui::EndPopup();
+				}
+			}
+			if (objectIndex.has_value())
+			{
+				Entity selectedEntity = sceneObjects[objectIndex.value()]->getEntity();
+				if (ImGui::CollapsingHeader("Components", headerFlags))
+				{
+					if (ecs.hasComponent<TransformComponent>(selectedEntity))
+					{
+						if (ImGui::TreeNode("Transform"))
+						{
+							TransformComponent &transform = ecs.retrieve<TransformComponent>(selectedEntity);
+
+							unsigned short propertyId = 0;
+							if (ImGui::BeginTable("Transform", 2))
+							{
+								ImGui::TableSetupColumn("Property");
+								ImGui::TableSetupColumn("Value");
+								ImGui::TableHeadersRow();
+
+								ImGui::PushID(propertyId++);
+								ImGui::TableNextRow();
+								ImGui::TableNextColumn();
+								ImGui::Text("Translate X");
+								ImGui::TableNextColumn();
+								ImGui::InputFloat("", &transform.translation.x);
+								ImGui::PopID();
+
+								ImGui::PushID(propertyId++);
+								ImGui::TableNextRow();
+								ImGui::TableNextColumn();
+								ImGui::Text("Translate Y");
+								ImGui::TableNextColumn();
+								ImGui::InputFloat("", &transform.translation.y);
+								ImGui::PopID();
+
+								ImGui::PushID(propertyId++);
+								ImGui::TableNextRow();
+								ImGui::TableNextColumn();
+								ImGui::Text("Translate Z");
+								ImGui::TableNextColumn();
+								ImGui::InputFloat("", &transform.translation.z);
+								ImGui::PopID();
+
+								ImGui::PushID(propertyId++);
+								ImGui::TableNextRow();
+								ImGui::TableNextColumn();
+								ImGui::Text("Scale X");
+								ImGui::TableNextColumn();
+								ImGui::InputFloat("", &transform.scale.x);
+								ImGui::PopID();
+
+								ImGui::PushID(propertyId++);
+								ImGui::TableNextRow();
+								ImGui::TableNextColumn();
+								ImGui::Text("Scale Y");
+								ImGui::TableNextColumn();
+								ImGui::InputFloat("", &transform.scale.y);
+								ImGui::PopID();
+
+								ImGui::PushID(propertyId++);
+								ImGui::TableNextRow();
+								ImGui::TableNextColumn();
+								ImGui::Text("Scale Z");
+								ImGui::TableNextColumn();
+								ImGui::InputFloat("", &transform.scale.z);
+								ImGui::PopID();
+
+								ImGui::EndTable();
+							}
+
+							ImGui::TreePop();
+						}
+					}
+					else
+					{
+						if (ImGui::Button("Add Transform"))
+						{
+							ecs.createComponent<TransformComponent>(selectedEntity);
+						}
+					}
+
+					if (ecs.hasComponent<RenderComponent>(selectedEntity))
+					{
+						auto &render = ecs.retrieve<RenderComponent>(selectedEntity);
+						if (ImGui::TreeNode("Rendering"))
+						{
+							if (ImGui::Button("Set Mesh"))
+							{
+								if (modelIndex.has_value() && meshIndex.has_value())
+								{
+									render.mesh = models[modelIndex.value()]->getImportResult().meshes[meshIndex.value()];
+								}
+							}
+							ImGui::TreePop();
+						}
+					}
+					else
+					{
+						if (ImGui::Button("Add Render"))
+						{
+							ecs.createComponent<RenderComponent>(selectedEntity);
+						}
+					}
+					if (ecs.hasComponent<ColliderComponent>(selectedEntity))
+					{
+						auto &collider = ecs.retrieve<ColliderComponent>(selectedEntity);
+						if (ImGui::TreeNode("Collider"))
+						{
+							ImGui::TreePop();
+						}
+					}
+					else
+					{
+						if (ImGui::Button("Add Collider"))
+						{
+							ecs.createComponent<ColliderComponent>(selectedEntity);
+						}
+					}
+					if (ecs.hasComponent<LightingComponent>(selectedEntity))
+					{
+						auto &lighting = ecs.retrieve<LightingComponent>(selectedEntity);
+						if (ImGui::TreeNode("Lighting"))
+						{
+							ImGui::TreePop();
+						}
+					}
 				}
 			}
 		}
 		ImGui::End();
-
 	});
 }
 

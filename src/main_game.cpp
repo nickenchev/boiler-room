@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
 		engine.initialize(initialSize);
 
 		// create the part and start it
-		auto part = std::make_shared<EditorPart>(engine);
+		auto part = std::make_shared<Boiler::EditorPart>(engine);
 		engine.setPart(part);
 
 		while (engine.isRunning())
