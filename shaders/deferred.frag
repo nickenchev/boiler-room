@@ -32,7 +32,7 @@ void main()
 	vec3 lightPosition = vec3(lights.sources[0].position);
 	vec3 lightColour = vec3(lights.sources[0].color);
 
-	float ambientStrength = 0.3;
+	float ambientStrength = 0.05;
 	vec3 ambientColour = vec3(1, 1, 1);
 	vec3 ambient = ambientStrength * ambientColour;
 
