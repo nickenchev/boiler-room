@@ -54,7 +54,7 @@ EditorPart::EditorPart(Engine &engine) : Part("Boiler Room", engine), gltfImport
 	windowEntities = true;
 	menuNewEntity = false;
 
-	strcpy(modelFilePath, "data/corridor-maya.gltf");
+	strcpy(modelFilePath, "data/cabin.gltf");
 	engine.setMouseRelativeMode(false);
 }
 
@@ -80,6 +80,7 @@ void EditorPart::onStart()
 	camCollider.min = vec3(-0.5f, -0.5f, -0.5f);
 	camCollider.min = vec3(0.5f, 0.5f, 0.5f);
 
+	/*
 	Entity gui = ecs.newEntity("gui");
     ecs.createComponent<GUIComponent>(gui, [this, &ecs] {
 		if (ImGui::Begin("Scene", &windowModels, ImGuiWindowFlags_MenuBar))
@@ -121,6 +122,45 @@ void EditorPart::onStart()
 
 						if (isOpen)
 						{
+							// nodes
+							ImGui::TableNextRow();
+							ImGui::TableNextColumn();
+							if (ImGui::TreeNodeEx("Nodes"))
+							{
+								ImGui::TableNextColumn();
+								ImGui::TextDisabled("");
+
+								if (model->getModel().nodes.size())
+								{
+									for (int nodeIdx = 0; nodeIdx < model->getModel().nodes.size(); ++nodeIdx)
+									{
+										const gltf::Node &node = model->getModel().nodes[nodeIdx];
+
+										ImGui::TableNextColumn();
+
+										bool isSelected = selectedNode == nodeIdx;
+										if (ImGui::Selectable(node.name.c_str(), &isSelected))
+										{
+											selectedModel = modelIdx;
+											selectedNode = nodeIdx;
+										}
+										if (ImGui::BeginPopupContextItem())
+										{
+											if (ImGui::Button("Generate Objects"))
+											{
+												logger.log("Generating objects");
+												ImGui::CloseCurrentPopup();
+											}
+										}
+
+
+										ImGui::TableNextColumn();
+										ImGui::TextUnformatted("");
+									}
+								}
+								ImGui::TreePop();
+							}
+
 							// meshes
 							ImGui::TableNextRow();
 							ImGui::TableNextColumn();
@@ -136,11 +176,11 @@ void EditorPart::onStart()
 										const gltf::Mesh &mesh = model->getModel().meshes.at(meshIdx);
 										ImGui::TableNextColumn();
 
-										bool isSelected = meshIndex == meshIdx;
+										bool isSelected = selectedMesh == meshIdx;
 										if (ImGui::Selectable(mesh.name.c_str(), &isSelected))
 										{
-											modelIndex = modelIdx;
-											meshIndex = meshIdx;
+											selectedModel = modelIdx;
+											selectedMesh = meshIdx;
 										}
 
 										ImGui::TableNextColumn();
@@ -181,13 +221,13 @@ void EditorPart::onStart()
 						ImGui::TableNextRow();
 
 						ImGui::TableNextColumn();
-						bool isSelected = i == objectIndex;
+						bool isSelected = i == selectedObject;
 						ImGuiSelectableFlags selectableFlags = ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap;
 						ImGui::Selectable(name.c_str(), &isSelected, selectableFlags, ImVec2(0, 0));
 
 						if (isSelected)
 						{
-							objectIndex = i;
+							selectedObject = i;
 						}
 
 						ImGui::PopID();
@@ -211,7 +251,7 @@ void EditorPart::onStart()
 
 									ecs.createComponent<TransformComponent>(newEntity);
 									ecs.createComponent<RenderComponent>(newEntity);
-									objectIndex = sceneObjects.size() - 1;
+									selectedObject = sceneObjects.size() - 1;
 								}
 								break;
 							}
@@ -225,7 +265,7 @@ void EditorPart::onStart()
 
 									ecs.createComponent<TransformComponent>(newEntity);
 									ecs.createComponent<LightingComponent>(newEntity, vec4(1, 1, 1, 1));
-									objectIndex = sceneObjects.size() - 1;
+									selectedObject = sceneObjects.size() - 1;
 								}
 								break;
 							}
@@ -238,7 +278,7 @@ void EditorPart::onStart()
 									sceneObjects.push_back(std::make_unique<SceneCamera>(newName, newEntity));
 
 									ecs.createComponent<TransformComponent>(newEntity);
-									objectIndex = sceneObjects.size() - 1;
+									selectedObject = sceneObjects.size() - 1;
 								}
 								break;
 							}
@@ -248,9 +288,9 @@ void EditorPart::onStart()
 					ImGui::EndPopup();
 				}
 			}
-			if (objectIndex.has_value())
+			if (selectedObject.has_value())
 			{
-				Entity selectedEntity = sceneObjects[objectIndex.value()]->getEntity();
+				Entity selectedEntity = sceneObjects[selectedObject.value()]->getEntity();
 				if (ImGui::CollapsingHeader("Components", headerFlags))
 				{
 					if (ecs.hasComponent<TransformComponent>(selectedEntity))
@@ -335,9 +375,9 @@ void EditorPart::onStart()
 						{
 							if (ImGui::Button("Set Mesh"))
 							{
-								if (modelIndex.has_value() && meshIndex.has_value())
+								if (selectedModel.has_value() && selectedMesh.has_value())
 								{
-									render.mesh = models[modelIndex.value()]->getImportResult().meshes[meshIndex.value()];
+									render.mesh = models[selectedModel.value()]->getImportResult().meshes[selectedMesh.value()];
 								}
 							}
 							ImGui::TreePop();
@@ -378,6 +418,7 @@ void EditorPart::onStart()
 		}
 		ImGui::End();
 	});
+	*/
 }
 
 void EditorPart::update(const FrameInfo &frameInfo)

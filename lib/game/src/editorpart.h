@@ -29,7 +29,7 @@ class EditorPart : public Boiler::Part
 
     std::vector<std::shared_ptr<Boiler::GLTFModel>> models;
 
-	std::optional<int> objectIndex, modelIndex, meshIndex;
+	std::optional<int> selectedObject, selectedModel, selectedMesh, selectedNode;
 	std::vector<std::unique_ptr<Editor::SceneObject>> sceneObjects;
 	
 public:
