@@ -7,8 +7,8 @@
 #include <SDL_vulkan.h>
 
 #include <boiler.h>
-#include <display/vulkanrenderer.h>
-#include <display/openglrenderer.h>
+#include <display/vulkan/vulkanrenderer.h>
+#include <display/opengl/openglrenderer.h>
 
 #include <glad/glad.h>
 

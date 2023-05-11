@@ -2,11 +2,11 @@
 
 in VsOut
 {
-	vec4 fragColor;
+	vec4 fragColour;
 } fsIn;
-out vec4 color;
+out vec4 colour;
 
 void main(void)
 {
-	color = fsIn.fragColor;
+	colour = fsIn.fragColour;
 }

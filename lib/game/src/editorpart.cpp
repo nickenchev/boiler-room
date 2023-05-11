@@ -65,7 +65,8 @@ void EditorPart::onStart()
 	// create viewport camera
 	Entity viewportCam = ecs.newEntity("Viewport Camera");
 	ecs.createComponent<InputComponent>(viewportCam);
-	ecs.createComponent<TransformComponent>(viewportCam);
+	auto &camTransport = ecs.createComponent<TransformComponent>(viewportCam);
+	camTransport.translation = vec3(8, 3, 20);
 	auto &camComponent = ecs.createComponent<CameraComponent>(viewportCam);
 	camComponent.direction = vec3(0, 0, -1);
 	camComponent.up = vec3(0, 1, 0);
@@ -79,6 +80,12 @@ void EditorPart::onStart()
 	camCollider.isDynamic = true;
 	camCollider.min = vec3(-0.5f, -0.5f, -0.5f);
 	camCollider.min = vec3(0.5f, 0.5f, 0.5f);
+
+	GLTFImporter importer(engine);
+
+	Entity modelRoot = ecs.newEntity("Model Root");
+	auto model = importer.import(engine.getRenderer().getAssetSet(), "data/cabin.gltf");
+	model->createInstance(ecs, modelRoot);
 
 	/*
 	Entity gui = ecs.newEntity("gui");
