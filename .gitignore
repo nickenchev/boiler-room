@@ -5,7 +5,9 @@ build/
 *.spv
 data/
 .vscode/
+.idea/
 .dir-locals.el
+cmake-build-debug/
 run.sh
 /renderdoc.cap
 .vs/
