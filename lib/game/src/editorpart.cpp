@@ -66,7 +66,7 @@ void EditorPart::onStart()
 	Entity viewportCam = ecs.newEntity("Viewport Camera");
 	ecs.createComponent<InputComponent>(viewportCam);
 	auto &camTransport = ecs.createComponent<TransformComponent>(viewportCam);
-	camTransport.translation = vec3(8, 3, 20);
+	camTransport.translation = vec3(0, 3, 15);
 	auto &camComponent = ecs.createComponent<CameraComponent>(viewportCam);
 	camComponent.direction = vec3(0, 0, -1);
 	camComponent.up = vec3(0, 1, 0);
@@ -84,7 +84,8 @@ void EditorPart::onStart()
 	GLTFImporter importer(engine);
 
 	Entity modelRoot = ecs.newEntity("Model Root");
-	auto model = importer.import(engine.getRenderer().getAssetSet(), "data/cabin.gltf");
+	//auto model = importer.import(engine.getRenderer().getAssetSet(), "data/ccity_building_set_1/scene.gltf");
+	auto model = importer.import(engine.getRenderer().getAssetSet(), "data/terrain/terrain.gltf");
 	model->createInstance(ecs, modelRoot);
 
 	/*

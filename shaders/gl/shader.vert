@@ -10,10 +10,12 @@ layout (location = 0) uniform mat4 mvp;
 out VsOut
 {
 	vec4 fragColour;
+	vec4 textureCoords;
 } vsOut;
 
 void main(void)
 {
 	gl_Position = mvp * position;
 	vsOut.fragColour = vec4(position.z, position.z, position.z, 1) + 0.3;
+	vsOut.textureCoords = textureCoords;
 }
