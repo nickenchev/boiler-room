@@ -6,16 +6,22 @@ layout (location = 2) in vec4 textureCoords;
 layout (location = 3) in vec4 normal;
 
 layout (location = 0) uniform mat4 mvp;
+layout (location = 1) uniform mat4 modelMatrix;
+layout (location = 2) uniform vec3 cameraPosition;
 
 out VsOut
 {
+	vec4 fragPosition;
 	vec4 fragColour;
+	vec4 fragNormal;
 	vec4 textureCoords;
 } vsOut;
 
 void main(void)
 {
-	gl_Position = mvp * position;
-	vsOut.fragColour = vec4(position.z, position.z, position.z, 1) + 0.3;
+	vsOut.fragPosition = modelMatrix * position;
+	vsOut.fragColour = colour;
+	vsOut.fragNormal = normal;
 	vsOut.textureCoords = textureCoords;
+	gl_Position = mvp * position;
 }

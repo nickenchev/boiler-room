@@ -1,3 +1,4 @@
+#include <SDL_mouse.h>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -10,9 +11,7 @@
 #include <display/vulkan/vulkanrenderer.h>
 #include <display/opengl/openglrenderer.h>
 #include <input/keys.h>
-
 #include <glad/glad.h>
-
 #include "editorpart.h"
 
 using namespace Boiler;
@@ -94,7 +93,6 @@ public:
 						{
 							const Size newSize(static_cast<float>(event.window.data1), static_cast<float>(event.window.data2));
 							engine.getRenderer().resize(newSize);
-
 							break;
 						}
 						case SDL_WINDOWEVENT_CLOSE:

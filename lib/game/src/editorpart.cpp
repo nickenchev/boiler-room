@@ -66,14 +66,14 @@ void EditorPart::onStart()
 	Entity viewportCam = ecs.newEntity("Viewport Camera");
 	ecs.createComponent<InputComponent>(viewportCam);
 	auto &camTransport = ecs.createComponent<TransformComponent>(viewportCam);
-	camTransport.translation = vec3(0, 3, 15);
+	camTransport.translation = vec3(0, 0, 5);
 	auto &camComponent = ecs.createComponent<CameraComponent>(viewportCam);
 	camComponent.direction = vec3(0, 0, -1);
 	camComponent.up = vec3(0, 1, 0);
 	ecs.createComponent<MovementComponent>(viewportCam);
 	auto &camPhysics = ecs.createComponent<PhysicsComponent>(viewportCam);
-	camPhysics.speed = 0.1f;
-	camPhysics.acceleration = 0.25f;
+	camPhysics.speed = 0.5f;
+	camPhysics.acceleration = 0.1f;
 
 	auto &camCollider = ecs.createComponent<ColliderComponent>(viewportCam);
 	camCollider.colliderType = ColliderType::AABB;
@@ -85,7 +85,10 @@ void EditorPart::onStart()
 
 	Entity modelRoot = ecs.newEntity("Model Root");
 	//auto model = importer.import(engine.getRenderer().getAssetSet(), "data/ccity_building_set_1/scene.gltf");
-	auto model = importer.import(engine.getRenderer().getAssetSet(), "data/terrain/terrain.gltf");
+	//auto model = importer.import(engine.getRenderer().getAssetSet(), "data/world/Modular Building LP.gltf");
+	//auto model = importer.import(engine.getRenderer().getAssetSet(), "data/glTF-Sample-Models-master/2.0/DamagedHelmet/glTF/DamagedHelmet.gltf");
+	auto model = importer.import(engine.getRenderer().getAssetSet(), "data/littlest_tokyo/glTF/littlest_tokyo.gltf");
+	//auto model = importer.import(engine.getRenderer().getAssetSet(), "data/glTF-Sample-Models-master/2.0/Sponza/glTF/Sponza.gltf");
 	model->createInstance(ecs, modelRoot);
 
 	/*
