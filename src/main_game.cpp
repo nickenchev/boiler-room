@@ -325,10 +325,11 @@ int main(int argc, char *argv[])
 		//else
 		OpenGLSDLWindow window(initialSize);
 		Renderer *renderer = new OpenGLRenderer();
+		renderer->initialize(initialSize);
 
 		// setup the engine itself
-		static Engine engine(renderer);
-		engine.initialize(initialSize);
+		static Engine engine;
+		engine.initialize(renderer);
 
 		// create the part and start it
 		auto part = std::make_shared<EditorPart>(engine);

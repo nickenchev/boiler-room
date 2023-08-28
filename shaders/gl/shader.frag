@@ -53,7 +53,7 @@ void main(void)
 //	vec4 result = vec4(ambient + diffuse + specular, 1.0) * fragAlbedo;
 //	outColour = vec4(result.r, result.g, result.b, 1);
 
-	vec3 n = normalize(fsIn.fragNormal.xyz);
+	vec3 n = normalize(fragNormal.xyz);
 	vec3 v = normalize(cameraPosition - fsIn.fragPosition.xyz);
 
 	// per light calculation

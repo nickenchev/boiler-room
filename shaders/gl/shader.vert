@@ -21,7 +21,7 @@ void main(void)
 {
 	vsOut.fragPosition = modelMatrix * position;
 	vsOut.fragColour = colour;
-	vsOut.fragNormal = normal;
+	vsOut.fragNormal = modelMatrix * normal;
 	vsOut.textureCoords = textureCoords;
 	gl_Position = mvp * position;
 }
