@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(boiler-room CXX)
+project(boiler-room C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -28,6 +28,8 @@ qt_add_executable(boiler-room
 	src/ui/mainwindow.cpp
 	src/ui/openglwindow.h
 	src/ui/openglwindow.cpp
+	src/ui/models/assetitemmodel.h
+	src/ui/models/assetitemmodel.cpp
 )
 
 set_target_properties(boiler-room PROPERTIES

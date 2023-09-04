@@ -157,8 +157,8 @@ public:
 					//}
 					//else
 					{
-						frameInfo.mouseXDistance += event.motion.xrel;
-						frameInfo.mouseYDistance += event.motion.yrel;
+						frameInfo.mouseXPos = event.motion.x;
+						frameInfo.mouseYPos = event.motion.y;
 					}
 					break;
 				}
