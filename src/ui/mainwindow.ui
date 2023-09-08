@@ -6,32 +6,21 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1435</width>
+    <width>1316</width>
     <height>808</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Boiler Room</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout_2">
     <item>
-     <layout class="QHBoxLayout" name="mainHorizontal">
+     <layout class="QHBoxLayout" name="mainHorizontal" stretch="4,8">
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
          <widget class="QTreeView" name="assetsTreeView"/>
-        </item>
-        <item>
-         <layout class="QGridLayout" name="gridLayout">
-          <item row="0" column="0">
-           <widget class="QPushButton" name="loadModelButton">
-            <property name="text">
-             <string>Load Model</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
         </item>
        </layout>
       </item>
@@ -44,12 +33,28 @@
          <attribute name="title">
           <string>Viewport</string>
          </attribute>
-         <layout class="QVBoxLayout" name="verticalLayout"/>
+         <layout class="QVBoxLayout" name="verticalLayout">
+          <item>
+           <layout class="QVBoxLayout" name="renderTabLayout" stretch="8,4">
+            <item>
+             <layout class="QVBoxLayout" name="renderLayout"/>
+            </item>
+            <item>
+             <widget class="QListView" name="logListView"/>
+            </item>
+           </layout>
+          </item>
+         </layout>
         </widget>
         <widget class="QWidget" name="tab">
          <attribute name="title">
           <string>Other Stuff</string>
          </attribute>
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <widget class="QWidget" name="widget" native="true"/>
+          </item>
+         </layout>
         </widget>
        </widget>
       </item>
@@ -62,24 +67,42 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1435</width>
-     <height>22</height>
+     <width>1316</width>
+     <height>21</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menuAssets">
+    <property name="title">
+     <string>Assets</string>
+    </property>
+    <addaction name="actionLoad_Model"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuAssets"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionLoad_Model">
+   <property name="text">
+    <string>Add Model</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections>
   <connection>
-   <sender>loadModelButton</sender>
-   <signal>clicked()</signal>
+   <sender>actionLoad_Model</sender>
+   <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
    <slot>onLoadModel()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>379</x>
-     <y>763</y>
+     <x>-1</x>
+     <y>-1</y>
     </hint>
     <hint type="destinationlabel">
      <x>861</x>

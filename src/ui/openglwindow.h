@@ -33,7 +33,7 @@ class OpenGLWindow : public QWindow
 
 	void exposeEvent(QExposeEvent *event) override;
 	void resizeEvent(QResizeEvent *event) override;
-	bool event(QEvent *event);
+	bool event(QEvent *event) override;
 
 public:
 	OpenGLWindow(Boiler::FrameInfo &frameInfo);
