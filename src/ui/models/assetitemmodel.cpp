@@ -71,6 +71,15 @@ bool AssetItemModel::insertRows(int row, int count, const QModelIndex &parent)
 	return true;
 }
 
+std::shared_ptr<TreeItem> AssetItemModel::getItem(QModelIndex index) const
+{
+	if (index.parent().isValid() && !index.parent().parent().isValid())
+	{
+		return categories[index.parent().row()]->getChild(index.row());
+	}
+	return nullptr;
+}
+
 void AssetItemModel::onModelAdded(std::shared_ptr<Boiler::GLTFModel> model)
 {
 	auto modelCategory = categories[0];

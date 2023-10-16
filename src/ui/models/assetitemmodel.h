@@ -51,6 +51,7 @@ public:
 		this->model = model;
 	}
 	const std::string &getTitle() const override { return model->getFilePath(); }
+	std::shared_ptr<Boiler::GLTFModel> getModel() const { return model; }
 };
 
 class AssetItemModel : public QAbstractItemModel
@@ -68,6 +69,7 @@ public:
 	int columnCount(const QModelIndex &parent) const override;
 	QVariant data(const QModelIndex &index, int role) const override;
 	bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex()) override;
+	std::shared_ptr<TreeItem> getItem(QModelIndex index) const;
 
 public slots:
 	void onModelAdded(std::shared_ptr<Boiler::GLTFModel> model);
