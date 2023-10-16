@@ -40,7 +40,7 @@ public:
 
 			SDL_WindowFlags winFlags = (SDL_WindowFlags)(SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
 
-			win = SDL_CreateWindow("Boiler", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+			win = SDL_CreateWindow("Boiler", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
 				initialSize.width, initialSize.height, winFlags);
 			if (!win)
 			{
@@ -335,9 +335,9 @@ int main(int argc, char *argv[])
 		auto part = std::make_shared<EditorPart>(engine);
 		engine.setPart(part);
 
+		FrameInfo frameInfo;
 		while (engine.isRunning())
 		{
-			FrameInfo frameInfo;
 			window.processEvents(engine, frameInfo);
 			engine.step(frameInfo);
 			window.endFrame();
