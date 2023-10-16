@@ -30,6 +30,7 @@ public:
 	{
 		return children.size();
 	}
+
 	virtual const std::string &getTitle() const = 0;
 };
 
