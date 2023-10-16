@@ -101,10 +101,6 @@ void OpenGLWindow::resizeEvent(QResizeEvent *event)
 
 OpenGLWindow::~OpenGLWindow()
 {
-	if (renderer)
-	{
-		renderer->shutdown();
-	}
 }
 
 inline KeyCode toBoilerKey(int qtKey)
@@ -119,8 +115,6 @@ inline KeyCode toBoilerKey(int qtKey)
 			return KeyCode::s;
 		case Qt::Key_D:
 			return KeyCode::d;
-		default:
-			return KeyCode::none;
 	}
 }
 

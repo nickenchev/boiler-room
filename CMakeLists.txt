@@ -15,11 +15,10 @@ qt_standard_project_setup()
 add_subdirectory(lib/boiler)
 add_subdirectory(lib/game)
 
-#add_executable(boiler-room-sdl
-#	src/main_game.cpp)
+add_executable(boiler-room-sdl src/main_game.cpp)
 
-#target_include_directories(boiler-room-sdl PRIVATE game boiler)
-#target_link_libraries(boiler-room-sdl game boiler SDL2::SDL2main SDL2::SDL2)
+target_include_directories(boiler-room-sdl PRIVATE game boiler)
+target_link_libraries(boiler-room-sdl game boiler SDL2::SDL2main SDL2::SDL2)
 
 qt_add_executable(boiler-room
 	src/main.cpp
@@ -31,8 +30,10 @@ qt_add_executable(boiler-room
 	src/ui/models/assetitemmodel.h
 	src/ui/models/assetitemmodel.cpp
 	src/ui/models/treeitem.h
-	src/ui/models/loglistmodel.h
-	src/ui/models/loglistmodel.cpp
+	src/ui/models/logtablemodel.h
+	src/ui/models/logtablemodel.cpp
+	src/ui/models/assetselectionmodel.h
+	src/ui/models/assetselectionmodel.cpp
 	src/listviewdestination.h
 	src/listviewdestination.cpp
 )

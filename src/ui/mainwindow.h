@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QItemSelection>
 #include <memory>
 #include <thread>
 #include "core/engine.h"
@@ -17,6 +18,8 @@ namespace Boiler
 	class GLTFModel;
 }
 
+class TreeItem;
+
 class MainWindow : public QMainWindow
 {
 	Q_OBJECT;
@@ -31,6 +34,12 @@ class MainWindow : public QMainWindow
 
 	QAbstractItemModel *assetItemModel;
 	std::thread loaderThread;
+	std::shared_ptr<TreeItem> selectedAsset;
+
+	void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
+
+protected:
+	void closeEvent(QCloseEvent *event) override;
 
 public:
 	explicit MainWindow(QWidget *parent = nullptr);
@@ -43,6 +52,8 @@ public slots:
 	void onRendererInitialized(Boiler::Renderer *renderer);
 	void onAwaitingFrame();
 	void onLoadModel();
+	void onShutdown();
+    void onCreateInstance();
 
 signals:
 	void loaderComplete(std::shared_ptr<Boiler::GLTFModel> model);
