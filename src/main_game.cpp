@@ -159,6 +159,8 @@ public:
 					{
 						frameInfo.mouseXPos = event.motion.x;
 						frameInfo.mouseYPos = event.motion.y;
+						frameInfo.mouseXDiff = event.motion.xrel;
+						frameInfo.mouseYDiff = event.motion.yrel;
 					}
 					break;
 				}
@@ -335,9 +337,9 @@ int main(int argc, char *argv[])
 		auto part = std::make_shared<EditorPart>(engine);
 		engine.setPart(part);
 
-		FrameInfo frameInfo;
 		while (engine.isRunning())
 		{
+			FrameInfo frameInfo;
 			window.processEvents(engine, frameInfo);
 			engine.step(frameInfo);
 			window.endFrame();

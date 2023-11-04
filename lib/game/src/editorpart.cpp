@@ -86,9 +86,9 @@ void EditorPart::onStart()
 	Entity modelRoot = ecs.newEntity("Model Root");
 	//auto model = importer.import(engine.getRenderer().getAssetSet(), "data/ccity_building_set_1/scene.gltf");
 	//auto model = importer.import(engine.getRenderer().getAssetSet(), "data/world/Modular Building LP.gltf");
-	auto model = importer.import(engine.getRenderer().getAssetSet(), "data/glTF-Sample-Models-master/2.0/DamagedHelmet/glTF/DamagedHelmet.gltf");
+	//auto model = importer.import(engine.getRenderer().getAssetSet(), "data/glTF-Sample-Models-master/2.0/DamagedHelmet/glTF/DamagedHelmet.gltf");
 	//auto model = importer.import(engine.getRenderer().getAssetSet(), "data/littlest_tokyo/glTF/littlest_tokyo.gltf");
-	//auto model = importer.import(engine.getRenderer().getAssetSet(), "data/glTF-Sample-Models-master/2.0/Sponza/glTF/Sponza.gltf");
+	auto model = importer.import(engine.getRenderer().getAssetSet(), "data/glTF-Sample-Models-master/2.0/Sponza/glTF/Sponza.gltf");
 	model->createInstance(ecs, modelRoot);
 
 	/*
