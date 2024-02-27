@@ -20,7 +20,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow{ parent }, logger("MainWin
 	ui->setupUi(this);
 
 	Logger::setDestination(&logDestination);
-	OpenGLWindow *openGLWindow = new OpenGLWindow(frameInfo);
+	openGLWindow = new OpenGLWindow(frameInfo);
 
 	QWidget *openGLWidget = QWidget::createWindowContainer(openGLWindow);
 	ui->renderLayout->addWidget(openGLWidget);
@@ -60,7 +60,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
 	engine->shutdown();
 }
 
-
 void MainWindow::onRendererInitialized(Renderer *renderer)
 {
 	engine = std::make_unique<Engine>();
@@ -74,6 +73,11 @@ void MainWindow::onAwaitingFrame()
 {
 	engine->step(frameInfo);
 	frameInfo.keyInputEvents.reset();
+
+	QSize labelSize = ui->label->size();
+	QImage image = openGLWindow->grabQImage();
+
+	ui->label->setPixmap(QPixmap::fromImage(image).scaled(labelSize.width(), labelSize.height(), Qt::AspectRatioMode::KeepAspectRatio));
 }
 
 void MainWindow::onLoaderComplete(std::shared_ptr<Boiler::GLTFModel> model)

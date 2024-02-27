@@ -2,64 +2,89 @@
 
 layout (binding = 0) uniform sampler2D albedoSampler;
 layout (binding = 1) uniform sampler2D normalSampler;
+layout (binding = 2) uniform sampler2D metallicRoughSampler;
 
-layout (location = 2) uniform vec3 cameraPosition;
+struct Material
+{
+	sampler2D albedoSampler;
+};
+
+struct Light
+{
+	vec4 position;
+	vec4 direction;
+	vec4 ambient;
+	vec4 diffuse;
+	vec4 specular;
+	uint lightType;
+};
+
+uniform vec3 cameraPosition;
+
+layout(std140) uniform Lighting
+{
+	uint frameLights;
+	Light lights[10];
+} lighting;
 
 in VsOut
 {
 	vec4 fragPosition;
 	vec4 fragColour;
 	vec4 fragNormal;
-	vec4 textureCoords;
+	vec2 textureCoords;
 } fsIn;
 
-out vec4 outColour;
+//out vec4 outColour;
 
-vec3 lit(vec3 l, vec3 n, vec3 v)
-{
-	vec3 reflectL = reflect(-l, n);
-	float s = clamp(100.0 * dot(reflectL, v) - 97.0, 0, 1);
-	vec3 warmColour = vec3(0.3, 0.3, 0);
-	vec3 highlightColour = vec3(2, 2, 2);
-
-	return mix(warmColour, highlightColour, s);
-}
+layout (location = 0) out vec4 fboColor;
 
 void main(void)
 {
-	vec4 fragAlbedo = texture(albedoSampler, fsIn.textureCoords.xy);
-	vec4 fragNormal = texture(normalSampler, fsIn.textureCoords.xy);
+	vec4 albedo = texture(albedoSampler, fsIn.textureCoords.xy);
+	vec4 normal = texture(normalSampler, fsIn.textureCoords.xy);
+	vec4 metalRough = texture(metallicRoughSampler, fsIn.textureCoords.xy);
+	vec4 fsNormal = normalize(fsIn.fragNormal);
+	vec4 lightAmount = vec4(0);
 
-	vec3 lightPosition = vec3(-5, 10, 0);
-	vec3 lightColour = vec3(1, 1, 1);
+	for (int i = 0; i < lighting.frameLights; ++i)
+	{
+		// ambient and diffuse
+		float ambientStrength = 0.1;
+		vec4 ambient = lighting.lights[i].ambient * ambientStrength;
 
-//	float ambientStrength = 0.2;
-//	vec3 ambientColour = vec3(1, 1, 1);
-//	vec3 ambient = ambientStrength * ambientColour;
-//
-//	vec3 normal = normalize(vec3(fsIn.fragNormal));
-//
-//	vec3 lightDirection = normalize(lightPosition - vec3(fsIn.fragPosition));
-//	float diff = max(dot(normal, lightDirection), 0);
-//	vec3 diffuse = diff * lightColour;
-//
-//	float specularStrength = 1;
-//	vec3 viewDir = normalize(cameraPosition - vec3(fsIn.fragPosition));
-//	vec3 reflectDir = reflect(-lightDirection, normal);
-//
-//	float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
-//	vec3 specular = specularStrength * spec * lightColour;
-//
-//	vec4 result = vec4(ambient + diffuse + specular, 1.0) * fragAlbedo;
-//	outColour = vec4(result.r, result.g, result.b, 1);
+		if (lighting.lights[i].lightType == 1)
+		{
+			// diffuse
+			vec4 lightDir = normalize(lighting.lights[i].position - fsIn.fragPosition);
+			lightDir = -vec4(normalize(vec3(-1, -1, 0)), 0);
+			float diffuseFactor = max(dot(fsNormal, lightDir), 0.0);
+			vec4 diffuse = lighting.lights[i].diffuse * diffuseFactor;
 
-	vec3 n = normalize(fragNormal.xyz);
-	vec3 v = normalize(cameraPosition - fsIn.fragPosition.xyz);
+			// specular highlight
+			vec4 reflectDir = reflect(-lightDir, fsNormal);
+			vec4 viewDir = normalize(vec4(cameraPosition, 1) - fsIn.fragPosition);
+			float specularStrength = 0.5;
+			float specularFactor = pow(max(dot(reflectDir, viewDir), 0.0), 64);
+			vec4 specular = specularStrength * specularFactor * lighting.lights[i].specular;
+			lightAmount += ambient + diffuse + specular;
+		}
+		if (lighting.lights[i].lightType == 2)
+		{
+			// diffuse
+			vec4 lightDir = normalize(lighting.lights[i].position - fsIn.fragPosition);
+			float diffuseFactor = max(dot(fsNormal, lightDir), 0.0);
+			vec4 diffuse = lighting.lights[i].diffuse * diffuseFactor;
 
-	// per light calculation
-	vec3 l = normalize(lightPosition - fsIn.fragPosition.xyz);
-	float Ndl = clamp(dot(n, l), 0, 1);
-
-	outColour = fragAlbedo;
-	outColour.rgb += Ndl * lightColour * lit(l, n, v);
+			// specular highlight
+			vec4 reflectDir = reflect(-lightDir, fsNormal);
+			vec4 viewDir = normalize(vec4(cameraPosition, 1) - fsIn.fragPosition);
+			float specularStrength = 0.5;
+			float specularFactor = pow(max(dot(reflectDir, viewDir), 0.0), 64);
+			vec4 specular = specularStrength * specularFactor * lighting.lights[i].specular;
+			lightAmount += ambient + diffuse + specular;
+		}
+	}
+	//outColour = lightAmount * albedo;
+	fboColor = lightAmount * albedo;
 }

@@ -16,6 +16,14 @@ OpenGLWindow::OpenGLWindow(FrameInfo &frameInfo) : QWindow(), frameInfo(frameInf
 	this->setSurfaceType(SurfaceType::OpenGLSurface);
 }
 
+QImage OpenGLWindow::grabQImage()
+{
+	unsigned char *data = renderer->getColorPixelData();
+	unsigned int byteSize = renderer->getColorPixelSize();
+
+	return QImage(data, currentSize.width, currentSize.height, QImage::Format_RGB32);
+}
+
 void OpenGLWindow::exposeEvent(QExposeEvent *event)
 {
 	Q_UNUSED(event);

@@ -39,6 +39,8 @@ public:
 	OpenGLWindow(Boiler::FrameInfo &frameInfo);
 	~OpenGLWindow();
 
+	QImage grabQImage();
+
 signals:
 	void rendererInitialized(Boiler::Renderer *renderer);
 	void awaitingFrame();

@@ -11,6 +11,7 @@
 
 class Ui_MainWindow;
 class QAbstractItemModel;
+class OpenGLWindow;
 
 namespace Boiler
 {
@@ -32,9 +33,10 @@ class MainWindow : public QMainWindow
 	Boiler::FrameInfo frameInfo;
 	int prevMouseX, prevMouseY;
 
-	QAbstractItemModel *assetItemModel;
 	std::thread loaderThread;
 	std::shared_ptr<TreeItem> selectedAsset;
+
+	OpenGLWindow *openGLWindow;
 
 	void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
 
